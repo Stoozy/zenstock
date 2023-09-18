@@ -18,6 +18,7 @@ import { useState } from "react";
 
 import { useWarehouseModal } from "@/hooks/use-warehouse-modal";
 import { Modal } from "@/components/ui/modal";
+import { redirect } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -37,7 +38,10 @@ export const WarehouseModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      setLoading(true);
       const response = await axios.post("/api/warehouses", values);
+      // reload and send to dashboard
+      window.location.assign(`/${response.data.id}`);
       console.log(response.data);
     } catch (err) {
       console.log(err);
