@@ -20,6 +20,7 @@ model warehouse {
 
 model item {
   id          String @id @default(uuid())
+  warehouseId String 
   name        String
   description String
   category    String
@@ -30,4 +31,10 @@ model item {
   updatedAt   DateTime @updatedAt
 }
 
-
+model order {
+  id          String @id @default(uuid())
+  warehouseId String
+  item        String
+  price       Float
+  quantity    Float
+}

@@ -37,6 +37,7 @@ export default function WarehouseSwitcher({
   items = [],
 }: WarehouseSwitcherProps) {
   const warehouseModal = useWarehouseModal();
+
   const params = useParams();
   const router = useRouter();
 

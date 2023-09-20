@@ -15,6 +15,7 @@ export const ModalProvider = () => {
     mounted && (
       <>
         <WarehouseModal />
+        <ItemModal />
       </>
     )
   );

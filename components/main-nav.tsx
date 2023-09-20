@@ -11,7 +11,17 @@ export function MainNav({
   const pathname = usePathname();
   const params = useParams();
 
-  const routes = [
+  const routes: { href: string; label: string; active: boolean }[] = [
+    {
+      href: `/${params.warehouseId}/`,
+      label: "Inventory",
+      active: pathname === `/${params.warehouseId}`,
+    },
+    {
+      href: `/${params.warehouseId}/orders`,
+      label: "Purchase Orders",
+      active: pathname === `/${params.warehouseId}/orders`,
+    },
     {
       href: `/${params.warehouseId}/settings`,
       label: "Settings",
