@@ -9,16 +9,18 @@ interface DashboardPageProps {
 }
 
 const DashboardPage: React.FC<DashboardPageProps> = async ({ params }) => {
-  const warehouse = await prismadb.warehouse.findFirst({
+  const data = await prismadb.item.findMany({
     where: {
-      id: params.warehouseId,
+      warehouseId: params.warehouseId,
     },
   });
 
-  const productsInStock: ItemProps[] = [];
+  const items: ItemProps[] = data;
+  console.log(items);
+
   const productsToOrder: OrderProps[] = [];
 
-  return <Dashboard items={productsInStock} orders={productsToOrder} />;
+  return <Dashboard items={items} orders={productsToOrder} />;
 };
 
 export default DashboardPage;

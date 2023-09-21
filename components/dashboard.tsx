@@ -17,6 +17,7 @@ import { useItemModal } from "@/hooks/use-item-modal";
 import { useWarehouseModal } from "@/hooks/use-warehouse-modal";
 import { useParams } from "next/navigation";
 import { DataTableDemo } from "./datagrid";
+import prismadb from "@/lib/prismadb";
 
 type Items = ItemProps[];
 type Orders = OrderProps[];
@@ -36,5 +37,8 @@ export const Dashboard: React.FC<{ items: Items; orders: Orders }> = ({
     itemModal.onOpen();
   };
 
-  return <DataTableDemo></DataTableDemo>;
+  // const warehouseId = params.warehouseId;
+  // const items = prismadb.item.findMany()
+
+  return <DataTableDemo items={items}></DataTableDemo>;
 };

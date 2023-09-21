@@ -16,12 +16,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import axios from "axios";
 
 const strToNum = z.coerce.number();
 
 const formSchema = z.object({
   name: z.string().min(1),
-  description: z.string().min(1),
+  description: z.string().min(0),
   category: z.string().min(1),
   quantity: strToNum,
   cost: strToNum,
@@ -30,6 +32,7 @@ const formSchema = z.object({
 
 export const ItemModal = () => {
   const itemModal = useItemModal();
+  const params = useParams();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,8 +46,23 @@ export const ItemModal = () => {
     },
   });
 
+  const [loading, setLoading] = useState(false);
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    // TODO:
+
+    try {
+      setLoading(true);
+
+      const body = { ...values, warehouseId: params.warehouseId };
+      console.log(body);
+      const response = await axios.post("/api/items", body);
+      window.location.assign(`/${response.data.id}`);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -150,10 +168,16 @@ export const ItemModal = () => {
               />
 
               <div className="pt-6 space-x-2 flex items-center justify-end  w-full">
-                <Button variant="outline" onClick={itemModal.onClose}>
+                <Button
+                  variant="outline"
+                  disabled={loading}
+                  onClick={itemModal.onClose}
+                >
                   Cancel
                 </Button>
-                <Button type="submit">Add</Button>
+                <Button type="submit" disabled={loading}>
+                  Add
+                </Button>
               </div>
             </form>
           </Form>
