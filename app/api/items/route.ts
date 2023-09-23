@@ -35,6 +35,7 @@ export async function PUT(req: Request) {
   try {
     const { userId } = auth();
     const body = await req.json();
+    console.log("Updating");
     console.log(body);
 
     const {
@@ -82,7 +83,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(item);
   } catch (err) {
-    console.log("[ITEM_POST]", err);
+    console.log("[ITEM_PUT]", err);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

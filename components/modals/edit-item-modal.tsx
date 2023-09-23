@@ -5,7 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import axios from "axios";
 
 const EditItemModal = () => {
   const editItemModal = useEditItemModal();
@@ -23,6 +25,22 @@ const EditItemModal = () => {
   let item = editItemModal.item;
 
   let [newItem, setNewItem] = useState(item);
+  let [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      console.log(newItem);
+      const response = await axios.put("/api/items", newItem);
+      window.location.assign(`/${response.data.id}`);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => setNewItem(item));
 
   return (
     <Modal
@@ -35,13 +53,20 @@ const EditItemModal = () => {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-left">Name</Label>
-            <Input id="name" defaultValue={item.name} className="col-span-3" />
+            <Input
+              id="name"
+              defaultValue={item.name}
+              onChange={(e) => {
+                newItem.name = e.target.value;
+              }}
+              className="col-span-3"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-left">Description</Label>
             <Input
               id="description"
-              onChange={(e) => (item.description = e.target.value)}
+              onChange={(e) => (newItem.description = e.target.value)}
               defaultValue={item.description}
               className="col-span-3"
             />
@@ -51,7 +76,7 @@ const EditItemModal = () => {
             <Label className="text-left">Category</Label>
             <Input
               id="category"
-              onChange={(e) => (item.category = e.target.value)}
+              onChange={(e) => (newItem.category = e.target.value)}
               defaultValue={item.category}
               className="col-span-3"
             />
@@ -61,7 +86,7 @@ const EditItemModal = () => {
             <Input
               id="quantity"
               defaultValue={item.quantity.toString()}
-              onChange={(e) => (item.quantity = parseFloat(e.target.value))}
+              onChange={(e) => (newItem.quantity = parseFloat(e.target.value))}
               className="col-span-3"
             />
           </div>
@@ -71,7 +96,7 @@ const EditItemModal = () => {
             <Input
               id="cost"
               onChange={(e) => {
-                item.cost = parseFloat(e.target.value);
+                newItem.cost = parseFloat(e.target.value);
               }}
               defaultValue={item.cost.toString()}
               className="col-span-3"
@@ -83,7 +108,7 @@ const EditItemModal = () => {
             <Input
               id="price"
               onChange={(e) => {
-                item.price = parseFloat(e.target.value);
+                newItem.price = parseFloat(e.target.value);
               }}
               defaultValue={item.price.toString()}
               className="col-span-3"
@@ -98,9 +123,9 @@ const EditItemModal = () => {
 
           <Button
             type="submit"
+            disabled={loading}
             onClick={() => {
-              console.log(item);
-              // TODO: verify input and then put on `api/items/`
+              handleSubmit();
             }}
           >
             Save changes
