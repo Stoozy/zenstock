@@ -22,6 +22,12 @@ export function MainNav({
       label: "Purchase Orders",
       active: pathname === `/${params.warehouseId}/orders`,
     },
+
+    {
+      href: `/${params.warehouseId}/alerts`,
+      label: "Alerts",
+      active: pathname === `/${params.warehouseId}/alerts`,
+    },
     {
       href: `/${params.warehouseId}/settings`,
       label: "Settings",

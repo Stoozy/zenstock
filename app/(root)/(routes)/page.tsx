@@ -6,7 +6,7 @@ import { UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { useItemModal } from "@/hooks/use-item-modal";
+import { useItemModal } from "@/hooks/use-add-item-modal";
 import { useWarehouseModal } from "@/hooks/use-warehouse-modal";
 
 const SetupPage = () => {

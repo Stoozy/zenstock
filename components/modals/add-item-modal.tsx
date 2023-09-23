@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { useItemModal } from "@/hooks/use-item-modal";
+import { useAddItemModal } from "@/hooks/use-add-item-modal";
 import { Modal } from "@/components/ui/modal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,8 +30,8 @@ const formSchema = z.object({
   price: strToNum,
 });
 
-export const ItemModal = () => {
-  const itemModal = useItemModal();
+export const AddItemModal = () => {
+  const itemModal = useAddItemModal();
   const params = useParams();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -49,8 +49,6 @@ export const ItemModal = () => {
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // TODO:
-
     try {
       setLoading(true);
 

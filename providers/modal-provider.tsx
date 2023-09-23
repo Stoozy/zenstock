@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ItemModal } from "@/components/modals/item-modal";
+import { AddItemModal } from "@/components/modals/add-item-modal";
 import { WarehouseModal } from "@/components/modals/warehouse-modal";
+import { ViewItemModal } from "@/components/modals/view-item-modal";
+import EditItemModal from "@/components/modals/edit-item-modal";
 
 export const ModalProvider = () => {
   const [mounted, setMounted] = useState(false);
@@ -15,7 +17,9 @@ export const ModalProvider = () => {
     mounted && (
       <>
         <WarehouseModal />
-        <ItemModal />
+        <AddItemModal />
+        <ViewItemModal />
+        <EditItemModal />
       </>
     )
   );

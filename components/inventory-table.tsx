@@ -37,15 +37,26 @@ import {
 } from "@/components/ui/table";
 import ItemProps from "@/lib/ItemProps";
 import { Badge } from "./ui/badge";
-import { useItemModal } from "@/hooks/use-item-modal";
-import prismadb from "@/lib/prismadb";
-import { useParams } from "next/navigation";
+import { useAddItemModal } from "@/hooks/use-add-item-modal";
 import axios from "axios";
+import { truncateString } from "@/lib/utils";
+import { useViewItemModal } from "@/hooks/use-view-item-modal";
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
+} from "./ui/dialog";
+import { DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import { redirect, useParams } from "next/navigation";
+import { useEditItemModal } from "@/hooks/use-edit-item-modal";
 
 type Items = ItemProps[];
 
-export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
+export const InventoryTable: React.FC<{ items: Items }> = ({ items }) => {
   const [loading, setLoading] = React.useState(false);
+  const params = useParams();
 
   const onDeleteItem = async (id: string) => {
     try {
@@ -63,6 +74,9 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
       setLoading(false);
     }
   };
+
+  const viewItemModal = useViewItemModal();
+  const editItemModal = useEditItemModal();
 
   const columns: ColumnDef<ItemProps>[] = [
     {
@@ -111,7 +125,11 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
       cell: ({ row }) => {
         const formatted: string = row.getValue("description");
 
-        return <div className="text-center font-medium">{formatted}</div>;
+        return (
+          <div className="text-center font-medium">
+            {truncateString(formatted, 15)}
+          </div>
+        );
       },
     },
     {
@@ -191,8 +209,6 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
-
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -204,7 +220,24 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  viewItemModal.setItem(row.original);
+                  viewItemModal.onOpen();
+                }}
+              >
+                View
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onSelect={() => {
+                  editItemModal.setItem(row.original);
+                  editItemModal.onOpen();
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+
               <DropdownMenuItem>Alert</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -212,7 +245,7 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
                   onDeleteItem(row.getValue("id"));
                 }}
               >
-                Delete
+                <div className="text-red-500">Delete</div>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -230,7 +263,7 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const itemModal = useItemModal();
+  const itemModal = useAddItemModal();
 
   const data = items;
   const table = useReactTable({
@@ -253,126 +286,128 @@ export const DataTableDemo: React.FC<{ items: Items }> = ({ items }) => {
   });
 
   return (
-    <div className="w-5/6 content-center m-auto items-center">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter items..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <div className="ps-4">
-          <Button
-            onClick={() => {
-              itemModal.onOpen();
-            }}
-          >
-            Add item
-          </Button>
-        </div>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+    <>
+      <div className="w-5/6 content-center m-auto items-center">
+        <div className="flex items-center py-4">
+          <Input
+            placeholder="Filter items..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
                   return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
                   );
                 })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div className="ps-4">
+            <Button
+              onClick={() => {
+                itemModal.onOpen();
+              }}
+            >
+              Add item
+            </Button>
+          </div>
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
