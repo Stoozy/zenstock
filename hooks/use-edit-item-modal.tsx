@@ -3,9 +3,8 @@ import { create } from "zustand";
 
 interface useEditItemModalStore {
   item: ItemProps;
-  setItem: (item: ItemProps) => void;
   isOpen: boolean;
-  onOpen: () => void;
+  onOpen: (item: ItemProps) => void;
   onClose: () => void;
 }
 
@@ -20,7 +19,6 @@ export const useEditItemModal = create<useEditItemModalStore>((set) => ({
     price: 0,
   },
   isOpen: false,
-  setItem: (item: ItemProps) => set({ item }),
-  onOpen: () => set({ isOpen: true }),
+  onOpen: (item: ItemProps) => set({ item, isOpen: true }),
   onClose: () => set({ isOpen: false }),
 }));

@@ -16,6 +16,15 @@ model warehouse {
   id          String @id @default(uuid())
   userId      String
   name        String
+
+
+  // alert settings
+  notify      String[]  // eg. "Email", "SMS"
+  email       String
+  number      String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model item {
@@ -24,17 +33,39 @@ model item {
   name        String
   description String
   category    String
-  quantity    Int
+  quantity    Float
   cost        Float
   price       Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model order {
+model purchase_order {
   id          String @id @default(uuid())
   warehouseId String
+  supplier    String
   item        String
   price       Float
   quantity    Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
+
+model alert {
+  id            String @id @default(uuid())
+  itemId        String
+
+  triggerType   String    // "Comparison", "Range"
+
+  comparison    String    // ">=", "<=", ">", "<"
+  values        Float[]   // 1 value if triggerType is "Comparison"
+                          // 2 if "Range": [low , high] indexed 0 and 1 respectively
+
+  alertedValue  Float     // value that caused the alert
+
+  settingsId    String    // foreign key for alert settings
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+

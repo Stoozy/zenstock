@@ -1,4 +1,5 @@
 import prismadb from "@/lib/prismadb";
+import { ThemeProvider } from "@/components/theme-provider";
 import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 

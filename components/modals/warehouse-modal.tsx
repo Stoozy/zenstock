@@ -19,9 +19,16 @@ import { useState } from "react";
 import { useWarehouseModal } from "@/hooks/use-warehouse-modal";
 import { Modal } from "@/components/ui/modal";
 import { redirect } from "next/navigation";
+import prismadb from "@/lib/prismadb";
+
+const phoneRegex = new RegExp(
+  /^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/
+);
 
 const formSchema = z.object({
   name: z.string().min(1),
+  email: z.string().email(),
+  number: z.string().regex(phoneRegex, "Invalid Number!"),
 });
 
 export const WarehouseModal = () => {
@@ -33,6 +40,8 @@ export const WarehouseModal = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      email: "",
+      number: "",
     },
   });
 
@@ -69,13 +78,56 @@ export const WarehouseModal = () => {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input disabled={loading} placeholder="" {...field} />
+                        <Input
+                          disabled={loading}
+                          placeholder="name"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   );
                 }}
               />
+              <FormField
+                name="email"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          disabled={loading}
+                          placeholder="john@example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
+              <FormField
+                name="number"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          disabled={loading}
+                          type="tel"
+                          placeholder="+1 (999)-999-9999"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
               <div className="pt-6 space-x-2 flex items-center justify-end  w-full">
                 <Button
                   disabled={loading}

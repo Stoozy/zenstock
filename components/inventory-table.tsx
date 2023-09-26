@@ -51,39 +51,44 @@ import {
 import { DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 import { redirect, useParams } from "next/navigation";
 import { useEditItemModal } from "@/hooks/use-edit-item-modal";
+import { useDeleteModal } from "@/hooks/use-delete-modal";
+import { useState, useEffect } from "react";
 
 type Items = ItemProps[];
 
 export const InventoryTable: React.FC<{ items: Items }> = ({ items }) => {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const params = useParams();
 
-  const onDeleteItem = async (id: string) => {
-    try {
-      setLoading(true);
-      const body = {
-        data: {
-          id,
-        },
-      };
-      await axios.delete("/api/items", body);
-      window.location.assign(`/`);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [deleteItemId, setDeleteItemId] = useState("");
+
+  useEffect(() => {
+    const onDeleteItem = async (id: string) => {
+      console.log(`Deleting item with id ${id}`);
+      try {
+        setLoading(true);
+        const body = {
+          data: {
+            id,
+          },
+        };
+        await axios.delete("/api/items", body);
+        window.location.assign(`/`);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (deleteItemId != "") onDeleteItem(deleteItemId);
+  }, [deleteItemId]);
 
   const viewItemModal = useViewItemModal();
   const editItemModal = useEditItemModal();
+  const deleteModal = useDeleteModal();
 
   const columns: ColumnDef<ItemProps>[] = [
-    {
-      accessorKey: "id",
-      header: ({ column }) => <></>,
-      cell: ({ row }) => <></>,
-    },
     {
       id: "select",
       header: ({ table }) => (
@@ -231,8 +236,8 @@ export const InventoryTable: React.FC<{ items: Items }> = ({ items }) => {
 
               <DropdownMenuItem
                 onSelect={() => {
-                  editItemModal.setItem(row.original);
-                  editItemModal.onOpen();
+                  // editItemModal.setItem(row.original);
+                  editItemModal.onOpen(row.original);
                 }}
               >
                 Edit
@@ -242,7 +247,14 @@ export const InventoryTable: React.FC<{ items: Items }> = ({ items }) => {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={() => {
-                  onDeleteItem(row.getValue("id"));
+                  // trigger useEffect and delte item once user decides to delete
+                  deleteModal.setCallback(() => {
+                    setDeleteItemId(row.original.id);
+                  });
+
+                  deleteModal.onOpen(
+                    `Are you sure you want to delete ${row.getValue("name")}?`
+                  );
                 }}
               >
                 <div className="text-red-500">Delete</div>

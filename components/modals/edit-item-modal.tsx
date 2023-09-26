@@ -1,37 +1,81 @@
-import { useEditItemModal } from "@/hooks/use-edit-item-modal";
+"use client";
+
+import * as z from "zod";
+import { useAddItemModal } from "@/hooks/use-add-item-modal";
 import { Modal } from "@/components/ui/modal";
-import { Dialog, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { z } from "zod";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
 import axios from "axios";
+import { useEditItemModal } from "@/hooks/use-edit-item-modal";
+
+const strToNum = z.coerce.number();
+
+const formSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(0),
+  category: z.string().min(1),
+  quantity: strToNum,
+  cost: strToNum,
+  price: strToNum,
+});
 
 const EditItemModal = () => {
-  const editItemModal = useEditItemModal();
+  const itemModal = useEditItemModal();
+  const params = useParams();
 
-  const strToNum = z.coerce.number();
-  const itemSchema = z.object({
-    name: z.string().min(1),
-    description: z.string().min(0),
-    category: z.string().min(1),
-    quantity: strToNum,
-    cost: strToNum,
-    price: strToNum,
+  const [item, setItem] = useState(itemModal.item);
+
+  const dv = {
+    name: itemModal.item.name,
+    description: itemModal.item.description,
+    category: itemModal.item.category,
+    quantity: z.number().parse(itemModal.item.quantity),
+    cost: z.number().parse(itemModal.item.cost),
+    price: z.number().parse(itemModal.item.price),
+  };
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: dv,
   });
 
-  let item = editItemModal.item;
+  useEffect(() => {
+    setTimeout(() => {
+      setItem(itemModal.item);
+      form.setValue("name", item.name);
+      form.setValue("description", item.description);
+      form.setValue("category", item.category);
+      form.setValue("quantity", z.number().parse(item.quantity));
+      form.setValue("cost", z.number().parse(item.cost));
+      form.setValue("price", z.number().parse(item.price));
+    });
+  }, [item, itemModal.isOpen]);
 
-  let [newItem, setNewItem] = useState(item);
-  let [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      console.log(newItem);
-      const response = await axios.put("/api/items", newItem);
+
+      const body = {
+        ...values,
+        warehouseId: params.warehouseId,
+        id: itemModal.item.id,
+      };
+      console.log(body);
+      const response = await axios.put("/api/items", body);
       window.location.assign(`/${response.data.id}`);
     } catch (err) {
       console.log(err);
@@ -40,98 +84,124 @@ const EditItemModal = () => {
     }
   };
 
-  useEffect(() => setNewItem(item));
-
   return (
     <Modal
       title="Edit Item"
-      description=""
-      isOpen={editItemModal.isOpen}
-      onClose={editItemModal.onClose}
+      description="Provide new product information"
+      isOpen={itemModal.isOpen}
+      onClose={itemModal.onClose}
     >
-      <Dialog>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-left">Name</Label>
-            <Input
-              id="name"
-              defaultValue={item.name}
-              onChange={(e) => {
-                newItem.name = e.target.value;
-              }}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-left">Description</Label>
-            <Input
-              id="description"
-              onChange={(e) => (newItem.description = e.target.value)}
-              defaultValue={item.description}
-              className="col-span-3"
-            />
-          </div>
+      <div>
+        <div className="space-y-4 py-2 pb-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Input placeholder="" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <FormControl>
+                        <Input placeholder="" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Quantity</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="cost"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Cost</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Selling Price</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-left">Category</Label>
-            <Input
-              id="category"
-              onChange={(e) => (newItem.category = e.target.value)}
-              defaultValue={item.category}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-left">Quantity</Label>
-            <Input
-              id="quantity"
-              defaultValue={item.quantity.toString()}
-              onChange={(e) => (newItem.quantity = parseFloat(e.target.value))}
-              className="col-span-3"
-            />
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-left">Cost</Label>
-            <Input
-              id="cost"
-              onChange={(e) => {
-                newItem.cost = parseFloat(e.target.value);
-              }}
-              defaultValue={item.cost.toString()}
-              className="col-span-3"
-            />
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-left">Price</Label>
-            <Input
-              id="price"
-              onChange={(e) => {
-                newItem.price = parseFloat(e.target.value);
-              }}
-              defaultValue={item.price.toString()}
-              className="col-span-3"
-            />
-          </div>
+              <div className="pt-6 space-x-2 flex items-center justify-end  w-full">
+                <Button
+                  variant="outline"
+                  disabled={loading}
+                  onClick={itemModal.onClose}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </Form>
         </div>
-
-        <DialogFooter>
-          <Button type="submit" variant={"outline"}>
-            Cancel
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={loading}
-            onClick={() => {
-              handleSubmit();
-            }}
-          >
-            Save changes
-          </Button>
-        </DialogFooter>
-      </Dialog>
+      </div>
     </Modal>
   );
 };

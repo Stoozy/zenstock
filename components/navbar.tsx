@@ -3,7 +3,6 @@ import { MainNav } from "@/components/main-nav";
 import WarehouseSwitcher from "@/components/warehouse-switcher";
 import { redirect } from "next/navigation";
 import prismadb from "@/lib/prismadb";
-import { useEffect, useState } from "react";
 
 const Navbar = async () => {
   const { userId } = auth();
