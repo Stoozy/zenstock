@@ -236,7 +236,6 @@ export const InventoryTable: React.FC<{ items: Items }> = ({ items }) => {
 
               <DropdownMenuItem
                 onSelect={() => {
-                  // editItemModal.setItem(row.original);
                   editItemModal.onOpen(row.original);
                 }}
               >
@@ -253,6 +252,7 @@ export const InventoryTable: React.FC<{ items: Items }> = ({ items }) => {
                   });
 
                   deleteModal.onOpen(
+                    "Item",
                     `Are you sure you want to delete ${row.getValue("name")}?`
                   );
                 }}

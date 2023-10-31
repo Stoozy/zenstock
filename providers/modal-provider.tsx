@@ -6,6 +6,8 @@ import { WarehouseModal } from "@/components/modals/warehouse-modal";
 import { ViewItemModal } from "@/components/modals/view-item-modal";
 import EditItemModal from "@/components/modals/edit-item-modal";
 import DeleteModal from "@/components/modals/delete-modal";
+import { AddPurchaseOrderModal } from "@/components/modals/add-purchase-modal";
+import EditPurchaseModal from "@/components/modals/edit-purchase-modal";
 
 export const ModalProvider = () => {
   const [mounted, setMounted] = useState(false);
@@ -22,6 +24,8 @@ export const ModalProvider = () => {
         <ViewItemModal />
         <EditItemModal />
         <DeleteModal />
+        <AddPurchaseOrderModal />
+        <EditPurchaseModal />
       </>
     )
   );

@@ -45,6 +45,7 @@ model purchase_order {
   warehouseId String
   supplier    String
   item        String
+  status      String
   price       Float
   quantity    Float
   createdAt   DateTime @default(now())

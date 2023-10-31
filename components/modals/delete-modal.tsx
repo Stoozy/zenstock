@@ -8,7 +8,7 @@ const DeleteModal = () => {
   return (
     <>
       <Modal
-        title="Delete"
+        title={"Delete " + modal.what}
         description=""
         isOpen={modal.isOpen}
         onClose={modal.onClose}
@@ -21,6 +21,7 @@ const DeleteModal = () => {
           <Button
             variant="destructive"
             onClick={() => {
+              modal.onClose();
               modal.callback();
             }}
           >

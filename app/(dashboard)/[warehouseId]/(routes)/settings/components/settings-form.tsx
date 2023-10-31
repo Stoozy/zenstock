@@ -46,13 +46,15 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ZodIssue[]>([]);
 
-  // const [smsEnabled, setSmsEnabled] = useState(data.notify.includes("SMS"));
-  // const [emailEnabled, setEmailEnabled] = useState(
-  //   data.notify.includes("EMAIL")
-  // );
-
-  const deleteWarehouse = () => {
-    console.log("Delete modal called back!");
+  const deleteWarehouse = async () => {
+    try {
+      const response = await axios.delete("/api/warehouses", {
+        data: { id: data.id },
+      });
+      window.location.assign(`/`);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const nameSubmit = async () => {
@@ -129,6 +131,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ data }) => {
           onClick={() => {
             deleteModal.setCallback(deleteWarehouse);
             deleteModal.onOpen(
+              "Warehouse",
               `This will delete the ${data.name} warehouse and all data associated with it.`
             );
           }}
